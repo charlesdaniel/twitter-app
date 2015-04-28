@@ -1,0 +1,19 @@
+{
+  "name": "twitter-app",
+  "version": "0.0.1",
+  "description": "A Twitter App example with Node/Express and Angular-Material",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Charles Daniel",
+  "license": "ISC",
+  "dependencies": {
+    "express": "~4.12.3",
+    "oauth": "~0.9.12",
+    "connect": "~3.3.5",
+    "cookie-session": "~1.1.0",
+    "node-twitter-api": "~1.5.0",
+    "body-parser": "~1.12.3"
+  }
+}

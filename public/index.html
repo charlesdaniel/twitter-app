@@ -1,0 +1,271 @@
+<html>
+ <head>
+
+    <!-- Angulars Material CSS now available via Google CDN; version 0.8 used here -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+    <meta name="viewport" content="initial-scale=1" />
+    <link href="/css-sprite/sprite-action-black.css" rel="stylesheet">
+    <!-- link href="/css-sprite/sprite-alert-black.css" rel="stylesheet">
+    <link href="/css-sprite/sprite-av-black.css" rel="stylesheet">
+    <link href="/css-sprite/sprite-communication-black.css" rel="stylesheet" -->
+    <link href="/css-sprite/sprite-navigation-black.css" rel="stylesheet">
+<style>
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body > div {
+    height: 100%;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+</style>
+  </head>
+  <body ng-app="TwitterApp">
+
+<div layout="column">
+
+  <div ui-view></div>
+</div>
+
+
+
+
+
+
+    <!-- Angular Material Dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js"></script>
+    <script src="/angular-ui-router.js"></script>
+    <script src="//code.angularjs.org/1.2.20/angular-resource.min.js"></script>
+
+
+    <!-- Angular Material Javascript now available via Google CDN; version 0.8 used here -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.8.3/angular-material.min.js"></script>
+    <script src="/async.js"></script>
+    <script src="/app.js"></script>
+
+
+
+
+
+  <script type="text/ng-template" id="login.html">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+        <div layout="row" >
+            <h1>Twitter App</h1>
+            <h5>by Charles Daniel</h5>
+        </div>
+    </div>
+  </md-toolbar>
+  <br/>
+  <div layout="column" layout-align="center center">
+      <div><md-button class="md-raised" href="/login"> Login via Twitter </md-button></div>
+  </div>
+  </script>
+
+
+  <script type="text/ng-template" id="main.html">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+        <div layout="row" >
+            <h1>Twitter App</h1>
+            <h5>by Charles Daniel</h5>
+        </div>
+        <span flex></span>
+        <md-button href="#/tweets" ng-disabled="logged_in">Tweets</md-button>
+        <span flex></span>
+        <md-button href="#/lists" ng-disabled="logged_in">Lists</md-button>
+        <span flex></span>
+        <md-button href="#/profile/me" ng-disabled="logged_in">Me</md-button>
+        <span flex></span>
+        <md-button href="/logout" ng-disabled="logged_in">Logout</md-button>
+    </div>
+  </md-toolbar>
+  <br/>
+<div ui-view></div>
+  </script>
+
+
+
+
+  <script type="text/ng-template" id="tweets.html">
+<div layout="row">
+
+  <div layout="column" flex="25" ng-controller="SearchCtrl">
+        <div layout="row">
+            <md-input-container>
+                <label>Search</label>
+                <input type="text" ng-model="search">
+            </md-input-container>
+            <md-button aria-label="Search" class="md-raised" style="height: 48px;" ng-click="do_search();">
+                <div class="icon icon-action-black icon-action-black-ic_search_black_24dp"></div>
+            </md-button>
+            <md-checkbox ng-model="search_current_location">Current Loc
+        </div>
+
+        <md-content layout-padding style="height: 600px;padding: 24px;">
+
+        Search History:
+        <md-list style="cursor: pointer">
+          <md-list-item class="md-2-line" ng-click="do_search($index);" ng-repeat="s in searches track by $index">
+            <div class="md-list-item-text">
+              <h5>{{s.q}} <md-button class="md-raised" ng-click="remove_search($index)"> x </md-button></h5>
+              <h6>{{s.geocode}}</h6>
+            </div>
+            <md-divider ng-if="!$last"></md-divider>
+
+          </md-list-item>
+        </md-list>
+
+        </md-content>
+
+  </div>
+
+
+  <div layout="column" flex="40">
+    <md-content>
+    <div>
+        Selected {{selected_tweets.count}} : 
+        <md-button ng-click="follow_selected()" ng-disabled="selected_tweets.count<=0">Follow</md-button>
+        <md-button ng-click="retweet_selected()" ng-disabled="selected_tweets.count<=0">Retweet</md-button>
+        <md-select ng-model="selected_list" ng-disabled="selected_tweets.count<=0" ng-change="add_to_selected_list()" md-on-open="load_lists()" ffstyle="min-width: 200px;">
+          <md-select-label>{{ selected_list ? selected_list.name : 'Add to List' }}</md-select-label>
+          <md-option ng-value="list" ng-repeat="list in lists">{{list.name}}</md-option>
+        </md-select>
+    </div>
+    </md-content>
+
+    <md-content layout-padding style="height: 100%;padding: 24px;">
+    <md-list>
+      <md-list-item class="md-2-line" ng-repeat="tweet in search_results.statuses track by $index">
+          <md-whiteframe class="md-whiteframe-z1" layout layout-align="center center" style="padding: 10px; margin-bottom: 10px;">
+                <md-checkbox aria-label="Select Tweet {{tweet.id_str}}" ng-model="selected_tweets.checkboxes[tweet.id_str]" ng-change="change_selected_tweets(tweet)"></md-checkbox>
+
+                <div class="md-list-item-text">
+                  <p>{{tweet.text}}</p>
+                  <p>
+                        <img height="32" width="32" ng-src="{{tweet.user.profile_image_url}}">
+                        <md-button ng-click="view_profile(tweet.user.id_str)"> @{{tweet.user.screen_name}} </md-button>
+                        <md-button ng-click="reply(tweet.id_str)">Reply</md-button>
+                        <md-button ng-click="retweet(tweet.id_str)">Retweet</md-button>
+                  </p>
+                </div>
+          </md-whiteframe>
+      </md-list-item>
+    </md-list>
+    </md-content>
+  </div>
+
+  <div layout="column" flex="35">
+    <div ui-view></div>
+  </div>
+</div>
+  </script>
+
+
+  <script type="text/ng-template" id="reply.html">
+<div layout="column">
+    <h2 class="md-display-1"> Replying to: </h2>
+          <md-whiteframe class="md-whiteframe-z1" layout layout-align="center center" style="padding: 10px; margin-bottom: 10px;">
+                <div class="md-list-item-text">
+                  <p>{{tweet.text}}</p>
+                  <p>
+                        <img height="32" width="32" ng-src="{{tweet.user.profile_image_url}}">
+                        <md-button> @{{tweet.user.screen_name}} </md-button>
+                  </p>
+                </div>
+          </md-whiteframe>
+            <div layout="column">
+                <textarea ng-model="reply.text" maxlength="140" style="height: 25%;" ></textarea>
+                <md-button ng-click="reply()"> Reply </md-button>
+                <md-button ng-click="cancel()"> Cancel </md-button>
+            </div>
+
+</div>
+  </script>
+
+  <script type="text/ng-template" id="retweet.html">
+<div layout="column">
+    <h2 class="md-display-1"> Retweet the following Tweet?</h2>
+          <md-whiteframe class="md-whiteframe-z1" layout layout-align="center center" style="padding: 10px; margin-bottom: 10px;">
+                <div class="md-list-item-text">
+                  <p>{{tweet.text}}</p>
+                  <p>
+                        <img height="32" width="32" ng-src="{{tweet.user.profile_image_url}}">
+                        <md-button> @{{tweet.user.screen_name}} </md-button>
+                  </p>
+                </div>
+          </md-whiteframe>
+    <md-button ng-click="retweet()"> Yes </md-button>
+    <md-button ng-click="cancel()"> No </md-button>
+
+</div>
+  </script>
+  
+
+  <script type="text/ng-template" id="lists.html">
+<div layout="row">
+  <div layout="column" flex="35">
+      <div>LISTS</div>
+        <ul>
+            <li ng-repeat="list in lists track by $index">
+                <md-button ng-click="select_list(list.id);">{{list.name}}</md-button>
+                <md-button class="md-icon-button delete" aria-label="Delete List {{list.name}}" ng-click="delete_list(list.id)">
+                    <div class="icon icon-action-black icon-action-black-ic_delete_black_24dp"></div>
+                </md-button>
+            </li>
+        </ul>
+
+        <md-input-container>
+            <label>New List Name</label>
+            <input type="text" ng-model="new_list_name">
+        </md-input-container>
+        <md-button ng-click="create_list()">Create</md-button>
+  </div>
+  <div layout="column" flex="35">
+        <div> MEMBERS</div>
+        <ul>
+            <li ng-repeat="member in members track by $index">
+                @{{member.screen_name}} <md-button ng-click="delete_member(current_list_id, member.id_str)">Remove</md-button>
+            </li>
+        </ul>
+  </div>
+</div>
+  </script>
+
+
+
+
+  <script type="text/ng-template" id="profile.html">
+  <div layout="column" flex="5">
+      <div>PROFILE</div>
+
+<md-card>
+ <div style="background-image: url({{profile.profile_background_image_url}}); ffbackground-color: #{{profile.profile_background_color}}; text-align: center;" >
+ <img ng-src="{{profile.profile_image_url}}" style="max-height: 64px; max-width: 64px; margin: 0; margin-left: auto; margin-right: auto;" class="md-card-image">
+</div>
+ <md-card-body>
+   <h2>@{{profile.screen_name}}</h2>
+   <p>{{profile.name}}</p>
+ </md-card-body>
+ <md-card-footer>
+    <div ng-if="profile.following">
+        <md-button class="md-raised" ng-click="unfollow()">Unfollow</md-button>
+    </div>
+    <div ng-if="!profile.following">
+        <md-button class="md-raised" ng-click="follow()">Follow</md-button>
+    </div>
+
+ </md-card-footer>
+</md-card>
+  </div>
+  </script>
+
+
+  </body>
+</html>
