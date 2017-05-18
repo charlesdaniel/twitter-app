@@ -1,9 +1,9 @@
 # twitter-app
-######by Charles Daniel
+###### by Charles Daniel
 
 An example Twitter UI app written in NodeJS (backend) and Angular-Material (frontend).
 
-###Installation
+### Installation
 
 ```
 $ git clone https://github.com/charlesdaniel/twitter-app.git
@@ -22,7 +22,7 @@ Change the `session_keys` in `config.js` to an array set of random strings (this
 
 Optionally change the `server_port` in `config.js` to whatever port you like.
 
-###Running
+### Running
 
 ```
 $ node server.js
